@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.CommandLine.Parsing;
 
 // DESIGN: not included in System.CommandLine namespace since most of the users won't ever need to use CliOption type
 namespace System.CommandLine.Symbols;
@@ -30,8 +31,54 @@ public abstract class CliOption : CliSymbol
     /// <remarks>The collection does not contain the <see cref="CliSymbol.Name"/> of the Option.</remarks>
     public ICollection<string> Aliases { get; } = new HashSet<string>();
 
+    public ArgumentArity Arity { get; set; }
+
+    /// <summary>
+    /// Gets a value that indicates whether multiple argument tokens are allowed for each option identifier token.
+    /// </summary>
+    /// <example>
+    /// If set to <see langword="true"/>, the following command line is valid for passing multiple arguments:
+    /// <code>
+    /// > --opt 1 2 3
+    /// </code>
+    /// The following is equivalent and is always valid:
+    /// <code>
+    /// > --opt 1 --opt 2 --opt 3
+    /// </code>
+    /// </example>
+    public bool AllowMultipleArgumentsPerToken { get; set; }
+
     /// <summary>
     /// Gets or sets the <see cref="Type" /> that the argument token(s) will be converted to.
     /// </summary>
     public abstract Type ValueType { get; }
+
+    public abstract bool HasDefaultValue { get; }
+
+    public abstract object? GetDefaultValue();
+
+#if NET7_0_OR_GREATER
+    // DESIGN: these methods should allow us to avoid referencing code that tries to create parser for any T
+    public static CliOption<T> CreateParsable<T>(string name, params string[] aliases)
+        where T : IParsable<T>
+    {
+        return new CliOption<T>(name, static argumentResult => T.Parse(argumentResult.Tokens[^1].Value, provider: null), aliases);
+    }
+
+    public static CliOption<T[]> CreateParsableArray<T>(string name, params string[] aliases)
+        where T : IParsable<T>
+    {
+        return new CliOption<T[]>(name, static argumentResult =>
+        {
+            T[] parsed = new T[argumentResult.Tokens.Count];
+
+            for (int i = 0; i < argumentResult.Tokens.Count; i++)
+            {
+                parsed[i] = T.Parse(argumentResult.Tokens[i].Value, provider: null);
+            }
+            
+            return parsed;
+        }, aliases);
+    }
+#endif
 }

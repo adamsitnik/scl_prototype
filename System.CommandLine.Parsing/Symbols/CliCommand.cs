@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.CommandLine.Parsing;
 using System.CommandLine.Symbols;
 using System.ComponentModel;
 
@@ -62,6 +63,29 @@ public class CliCommand : CliSymbol, IEnumerable<CliSymbol>
     /// </summary>
     /// <remarks>The collection does not contain the <see cref="CliSymbol.Name"/> of the Command.</remarks>
     public ICollection<string> Aliases { get; } = new HashSet<string>();
+
+    /// <summary>
+    /// Gets or sets a value that indicates whether unmatched tokens should be treated as errors. For example,
+    /// if set to <see langword="true"/> and an extra command or argument is provided, validation will fail.
+    /// </summary>
+    public bool TreatUnmatchedTokensAsErrors { get; set; } = true;
+
+    /// <summary>
+    /// Parses an array strings using the command.
+    /// </summary>
+    /// <param name="args">The string arguments to parse.</param>
+    /// <param name="configuration">The configuration on which the parser's grammar and behaviors are based.</param>
+    /// <returns>A parse result describing the outcome of the parse operation.</returns>
+    public ParseResult Parse(IReadOnlyList<string> args, CliConfiguration? configuration = null) => CliParser.Parse(this, args, configuration);
+
+    /// <summary>
+    /// Parses a command line string value using the command.
+    /// </summary>
+    /// <remarks>The command line string input will be split into tokens as if it had been passed on the command line.</remarks>
+    /// <param name="commandLine">A command line string to parse, which can include spaces and quotes equivalent to what can be entered into a terminal.</param>
+    /// <param name="configuration">The configuration on which the parser's grammar and behaviors are based.</param>
+    /// <returns>A parse result describing the outcome of the parse operation.</returns>
+    public ParseResult Parse(string commandLine, CliConfiguration? configuration = null) => CliParser.Parse(this, commandLine, configuration);
 
     /// <summary>
     /// Adds a <see cref="CliSymbol"/> to the command.
