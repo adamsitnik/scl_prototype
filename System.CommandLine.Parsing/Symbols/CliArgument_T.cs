@@ -1,4 +1,5 @@
-﻿using System.CommandLine.Parsing;
+﻿using System.Collections.Generic;
+using System.CommandLine.Parsing;
 using System.CommandLine.Parsing.Symbols;
 using System.CommandLine.Symbols;
 
@@ -7,9 +8,10 @@ namespace System.CommandLine;
 
 public class CliArgument<T> : CliArgument, IParsableSymbol<T>
 {
-    private Func<ParseInput, T>? _parser;
-    private T? _defaultValue;
     private bool _hasDefaultValue;
+    private T? _defaultValue;
+    private Func<ParseInput, T>? _parser;
+    private List<Action<ParseInput, T>>? _validators;
 
     /// <summary>
     /// Initializes a new instance of the Argument class.
@@ -43,6 +45,9 @@ public class CliArgument<T> : CliArgument, IParsableSymbol<T>
         get => _parser ??= ParseInput.GetDefaultParser<T>();
         set => _parser = value ?? throw new ArgumentNullException(nameof(value));
     }
+
+    // DESIGN: this requires adding the concept of validator to the symbol type itself
+    public List<Action<ParseInput, T>> Validators => _validators ?? new List<Action<ParseInput, T>>();
 
     public override bool TryGetDefaultValue(out object? defaultValue)
     {
