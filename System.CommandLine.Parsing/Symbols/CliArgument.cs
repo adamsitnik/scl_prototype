@@ -22,35 +22,26 @@ public abstract class CliArgument : CliSymbol
     /// </summary>
     public abstract Type ValueType { get; }
 
-    /// <summary>
-    /// Specifies if a default value is defined for the argument.
-    /// </summary>
-    public abstract bool HasDefaultValue { get; }
-
-    /// <summary>
-    /// Gets the default value for the argument.
-    /// </summary>
-    /// <returns>Returns the default value for the argument, if defined. Null otherwise.</returns>
-    public abstract object? GetDefaultValue();
+    public abstract bool TryGetDefaultValue(out object? defaultValue);
 
 #if NET7_0_OR_GREATER
     // DESIGN: these methods should allow us to avoid referencing code that tries to create parser for any T
     public static CliArgument<T> CreateParsable<T>(string name)
         where T : IParsable<T>
     {
-        return new CliArgument<T>(name, static argumentResult => T.Parse(argumentResult.Tokens[^1].Value, provider: null));
+        return new CliArgument<T>(name, static parseInput => T.Parse(parseInput.Tokens[^1].Value, provider: null));
     }
 
     public static CliArgument<T[]> CreateParsableArray<T>(string name)
         where T : IParsable<T>
     {
-        return new CliArgument<T[]>(name, static argumentResult =>
+        return new CliArgument<T[]>(name, static parseInput =>
         {
-            T[] parsed = new T[argumentResult.Tokens.Count];
+            T[] parsed = new T[parseInput.Tokens.Count];
 
-            for (int i = 0; i < argumentResult.Tokens.Count; i++)
+            for (int i = 0; i < parseInput.Tokens.Count; i++)
             {
-                parsed[i] = T.Parse(argumentResult.Tokens[i].Value, provider: null);
+                parsed[i] = T.Parse(parseInput.Tokens[i].Value, provider: null);
             }
 
             return parsed;

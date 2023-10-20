@@ -7,6 +7,7 @@ namespace System.CommandLine;
 
 public class CliOption<T> : CliOption, IParsableSymbol<T>
 {
+    private Func<ParseInput, T>? _parser;
     private T? _defaultValue;
     private bool _hasDefaultValue;
 
@@ -18,10 +19,9 @@ public class CliOption<T> : CliOption, IParsableSymbol<T>
     public CliOption(string name, params string[] aliases) : base(name)
     {
         foreach (string alias in aliases) Aliases.Add(alias);
-        Parser = ArgumentResult.GetDefaultParser<T>();
     }
 
-    internal CliOption(string name, Func<ArgumentResult, T> parser, params string[] aliases) : base(name)
+    internal CliOption(string name, Func<ParseInput, T> parser, params string[] aliases) : base(name)
     {
         foreach (string alias in aliases) Aliases.Add(alias);
         Parser = parser ?? throw new ArgumentNullException(nameof(parser));
@@ -41,16 +41,17 @@ public class CliOption<T> : CliOption, IParsableSymbol<T>
     }
 
     /// <summary>
-    /// A custom argument parser.
+    /// Argument parser.
     /// </summary>
-    /// <remarks>
-    /// It's invoked when there was parse input provided for given Argument.
-    /// The same instance can be set as <see cref="DefaultValueFactory"/>, in such case
-    /// the delegate is also invoked when no input was provided.
-    /// </remarks>
-    public Func<ArgumentResult, T> Parser { get; set; }
+    public Func<ParseInput, T> Parser
+    {
+        get => _parser ??= ParseInput.GetDefaultParser<T>();
+        set => _parser = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
-    public override bool HasDefaultValue => _hasDefaultValue;
-
-    public override object? GetDefaultValue() => _defaultValue;
+    public override bool TryGetDefaultValue(out object? defaultValue)
+    {
+        defaultValue = _hasDefaultValue ? _defaultValue : default;
+        return _hasDefaultValue;
+    }
 }

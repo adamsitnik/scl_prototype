@@ -20,12 +20,7 @@ public abstract class SymbolResult
     /// </summary>
     public IReadOnlyList<CliToken> Tokens => throw new NotImplementedException();
 
-    /// <summary>
-    /// Adds an error message for this symbol result to it's parse tree.
-    /// </summary>
-    /// <remarks>Setting an error will cause the parser to indicate an error for the user and prevent invocation of the command line.</remarks>
-    public virtual void AddError(string errorMessage) { }
-
     // DESIGN: all Find* and Get* methods got removed for clarity
+    // DESIGN: AddError got moved to ParseInput so the SymbolResult can be immutable
     // TODO: how can we access other symbol parsed value during validation
 }

@@ -53,28 +53,26 @@ public abstract class CliOption : CliSymbol
     /// </summary>
     public abstract Type ValueType { get; }
 
-    public abstract bool HasDefaultValue { get; }
-
-    public abstract object? GetDefaultValue();
+    public abstract bool TryGetDefaultValue(out object? defaultValue);
 
 #if NET7_0_OR_GREATER
     // DESIGN: these methods should allow us to avoid referencing code that tries to create parser for any T
     public static CliOption<T> CreateParsable<T>(string name, params string[] aliases)
         where T : IParsable<T>
     {
-        return new CliOption<T>(name, static argumentResult => T.Parse(argumentResult.Tokens[^1].Value, provider: null), aliases);
+        return new CliOption<T>(name, static parseInput => T.Parse(parseInput.Tokens[^1].Value, provider: null), aliases);
     }
 
     public static CliOption<T[]> CreateParsableArray<T>(string name, params string[] aliases)
         where T : IParsable<T>
     {
-        return new CliOption<T[]>(name, static argumentResult =>
+        return new CliOption<T[]>(name, static parseInput =>
         {
-            T[] parsed = new T[argumentResult.Tokens.Count];
+            T[] parsed = new T[parseInput.Tokens.Count];
 
-            for (int i = 0; i < argumentResult.Tokens.Count; i++)
+            for (int i = 0; i < parseInput.Tokens.Count; i++)
             {
-                parsed[i] = T.Parse(argumentResult.Tokens[i].Value, provider: null);
+                parsed[i] = T.Parse(parseInput.Tokens[i].Value, provider: null);
             }
             
             return parsed;

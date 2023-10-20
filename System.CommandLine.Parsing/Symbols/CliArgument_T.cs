@@ -7,6 +7,7 @@ namespace System.CommandLine;
 
 public class CliArgument<T> : CliArgument, IParsableSymbol<T>
 {
+    private Func<ParseInput, T>? _parser;
     private T? _defaultValue;
     private bool _hasDefaultValue;
 
@@ -14,9 +15,9 @@ public class CliArgument<T> : CliArgument, IParsableSymbol<T>
     /// Initializes a new instance of the Argument class.
     /// </summary>
     /// <param name="name">The name of the argument. It's not used for parsing, only when displaying Help or creating parse errors.</param>>
-    public CliArgument(string name) : base(name) => Parser = ArgumentResult.GetDefaultParser<T>();
+    public CliArgument(string name) : base(name) { }
 
-    internal CliArgument(string name, Func<ArgumentResult, T> parser) : base(name)
+    internal CliArgument(string name, Func<ParseInput, T> parser) : base(name)
     {
         Parser = parser ?? throw new ArgumentNullException(nameof(parser));
     }
@@ -35,16 +36,17 @@ public class CliArgument<T> : CliArgument, IParsableSymbol<T>
     }
 
     /// <summary>
-    /// A custom argument parser.
+    /// Argument parser.
     /// </summary>
-    /// <remarks>
-    /// It's invoked when there was parse input provided for given Argument.
-    /// The same instance can be set as <see cref="DefaultValueFactory"/>, in such case
-    /// the delegate is also invoked when no input was provided.
-    /// </remarks>
-    public Func<ArgumentResult, T> Parser { get; set; }
+    public Func<ParseInput, T> Parser
+    {
+        get => _parser ??= ParseInput.GetDefaultParser<T>();
+        set => _parser = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
-    public override bool HasDefaultValue => _hasDefaultValue;
-
-    public override object? GetDefaultValue() => _defaultValue;
+    public override bool TryGetDefaultValue(out object? defaultValue)
+    {
+        defaultValue = _hasDefaultValue ? _defaultValue : default;
+        return _hasDefaultValue;
+    }
 }
