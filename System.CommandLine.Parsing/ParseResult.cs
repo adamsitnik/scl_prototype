@@ -20,6 +20,9 @@ public sealed class ParseResult
         UnmatchedTokens = unmatchedTokens is null ? Array.Empty<string>() : unmatchedTokens.Select(token => token.Value).ToArray();
     }
 
+    // DESIGN: it's required to support Help and other "active options"
+    public SymbolResult TerminatingSymbolResult { get; }
+
     /// <summary>
     /// A result indicating the command specified in the command line input.
     /// </summary>
