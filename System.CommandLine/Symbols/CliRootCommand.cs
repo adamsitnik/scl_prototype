@@ -7,7 +7,7 @@ namespace System.CommandLine;
 
 public class CliRootCommand : CliCommand
 {
-    public CliRootCommand(string name, string? description = null) : base(name, description)
+    public CliRootCommand(string? description = null) : base("TODO", description)
     {
         Options.Add(new HelpOption());
         Options.Add(new VersionOption());

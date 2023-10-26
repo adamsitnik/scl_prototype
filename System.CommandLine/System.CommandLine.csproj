@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\System.CommandLine.Help\System.CommandLine.Help.csproj" />
-    <ProjectReference Include="..\System.CommandLine.Parsing\System.CommandLine.Parsing.csproj" />
+    <ProjectReference Include="..\System.CommandLine.Routing\System.CommandLine.Routing.csproj" />
   </ItemGroup>
 
 </Project>

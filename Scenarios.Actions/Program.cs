@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.CommandLine.Routing;
 using System.Net.NetworkInformation;
 
 namespace Scenarios.Actions
@@ -25,7 +26,7 @@ namespace Scenarios.Actions
                 countOption
             };
 
-            SynchronousSymbolRouter app = new(command);
+            SymbolRouter app = new();
             app.Use(command, parseResult =>
             {
                 string target = parseResult.GetValue(targetArg)!;
@@ -35,7 +36,11 @@ namespace Scenarios.Actions
             });
 
             ParseResult parseResult = command.Parse(args);
-            return app.Run(parseResult);
+            if (app.TryGetSynchronousAction(parseResult.TerminatingSymbolResult, out var action))
+            {
+                return action!.Invoke(parseResult);
+            }
+            return -1;
         }
 
         static int GetByName(string[] args)
@@ -50,7 +55,7 @@ namespace Scenarios.Actions
                 }
             };
 
-            SynchronousSymbolRouter app = new(command);
+            SymbolRouter app = new();
             app.Use(command, parseResult =>
             {
                 string target = parseResult.GetValue<string>("target")!;
@@ -60,13 +65,17 @@ namespace Scenarios.Actions
             });
 
             ParseResult parseResult = command.Parse(args);
-            return app.Run(parseResult);
+            if (app.TryGetSynchronousAction(parseResult.TerminatingSymbolResult, out var action))
+            {
+                return action!.Invoke(parseResult);
+            }
+            return -1;
         }
 
         static int GetWithHighLevelApi(string[] args)
         {
-            SynchronousSymbolRouter app = new();
-            app.AddCommand("ping",
+            var builder = CommandLineApplication.CreateBuilder();
+            builder.AddCommand("ping",
                 new CliArgument<string>("target"),
                 new CliOption<int>("-n")
                 {
@@ -75,7 +84,7 @@ namespace Scenarios.Actions
                 },
                 (target, count) => Ping(target!, count));
 
-            return app.Run(args);
+            return builder.Build().Run(args);
         }
 
         private static void Ping(string target, int count)

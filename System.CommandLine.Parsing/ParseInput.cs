@@ -12,7 +12,7 @@ namespace System.CommandLine.Parsing;
 // TODO: it's missing the Parent property. Is that acceptable?
 public readonly struct ParseInput
 {
-    public ParseInput(CliSymbol symbol) => Symbol = symbol;
+    internal ParseInput(CliSymbol symbol) => Symbol = symbol;
 
     public CliSymbol Symbol { get; }
 
